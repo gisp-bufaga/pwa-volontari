@@ -7,10 +7,15 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from .views import home
 
 urlpatterns = [
+    # Home
+    path('', home, name='home'),
+
     # Admin
     path('admin/', admin.site.urls),
+  
     
     # API Documentation
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
@@ -18,14 +23,14 @@ urlpatterns = [
     
     # API endpoints
     path('api/auth/', include('apps.users.urls')),
-    path('api/segreteria/', include('apps.segreteria.urls')),
-    path('api/activities/', include('apps.activities.urls')),
-    path('api/forniture/', include('apps.forniture.urls')),
-    path('api/vehicles/', include('apps.vehicles.urls')),
-    path('api/checklist/', include('apps.checklist.urls')),
-    path('api/reports/', include('apps.reports.urls')),
-    path('api/notifications/', include('apps.notifications.urls')),
-    path('api/vestiario/', include('apps.vestiario.urls')),
+    #path('api/segreteria/', include('apps.segreteria.urls')),
+    #path('api/activities/', include('apps.activities.urls')),
+    #path('api/forniture/', include('apps.forniture.urls')),
+    #path('api/vehicles/', include('apps.vehicles.urls')),
+    #path('api/checklist/', include('apps.checklist.urls')),
+    #path('api/reports/', include('apps.reports.urls')),
+    #path('api/notifications/', include('apps.notifications.urls')),
+    #path('api/vestiario/', include('apps.vestiario.urls')),
 ]
 
 # Serve media files in development

@@ -1,13 +1,18 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
-import { Box, CircularProgress } from '@mui/material'
-import { useAuthStore } from './stores/authStore'
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { Box, CircularProgress } from '@mui/material';
+import { useAuthStore } from './stores/authStore';
 
-// Placeholder components (will be implemented in Sprint 1)
-const LoginPage = () => <div>Login Page - Coming Soon</div>
-const DashboardPage = () => <div>Dashboard - Coming Soon</div>
+// Components
+import ProtectedRoute from './components/ProtectedRoute';
+import MainLayout from './components/MainLayout';
+
+// Pages
+import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
+import ProfilePage from './pages/ProfilePage';
 
 function App() {
-  const { isAuthenticated, isLoading } = useAuthStore()
+  const { isAuthenticated, isLoading } = useAuthStore();
 
   if (isLoading) {
     return (
@@ -19,27 +24,41 @@ function App() {
       >
         <CircularProgress />
       </Box>
-    )
+    );
   }
 
   return (
     <Routes>
-      {/* Public routes */}
-      <Route
-        path="/login"
-        element={!isAuthenticated ? <LoginPage /> : <Navigate to="/" replace />}
-      />
+      {/* Public Routes */}
+      <Route path="/login" element={<LoginPage />} />
 
-      {/* Protected routes */}
+      {/* Protected Routes with Layout */}
       <Route
-        path="/"
-        element={isAuthenticated ? <DashboardPage /> : <Navigate to="/login" replace />}
-      />
-      
-      {/* Catch all */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+        element={
+          <ProtectedRoute>
+            <MainLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        
+        {/* Placeholder routes - TODO: Implement in next sprints */}
+        <Route path="/users" element={<div style={{padding: '20px'}}>Users Management - Coming in Sprint 1</div>} />
+        <Route path="/activities" element={<div style={{padding: '20px'}}>Activities - Coming in Sprint 2</div>} />
+        <Route path="/forniture" element={<div style={{padding: '20px'}}>Forniture - Coming in Sprint 3</div>} />
+        <Route path="/vehicles" element={<div style={{padding: '20px'}}>Vehicles - Coming in Sprint 4</div>} />
+        <Route path="/checklist" element={<div style={{padding: '20px'}}>Checklist - Coming in Sprint 5</div>} />
+        <Route path="/reports" element={<div style={{padding: '20px'}}>Reports - Coming in Sprint 6</div>} />
+        <Route path="/notifications" element={<div style={{padding: '20px'}}>Notifications - Coming in Sprint 7</div>} />
+        <Route path="/settings" element={<div style={{padding: '20px'}}>Settings - Coming Soon</div>} />
+      </Route>
+
+      {/* Default redirect */}
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
-  )
+  );
 }
 
-export default App
+export default App;

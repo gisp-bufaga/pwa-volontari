@@ -32,14 +32,14 @@ INSTALLED_APPS = [
     # Local apps
     'apps.core',
     'apps.users',
-    'apps.segreteria',
-    'apps.activities',
-    'apps.forniture',
-    'apps.vehicles',
-    'apps.checklist',
-    'apps.reports',
-    'apps.notifications',
-    'apps.vestiario',
+    #'apps.segreteria',
+    #'apps.activities',
+    #'apps.forniture',
+    #'apps.vehicles',
+    #'apps.checklist',
+    #'apps.reports',
+    #'apps.notifications',
+    #'apps.vestiario',
 ]
 
 MIDDLEWARE = [

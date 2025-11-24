@@ -3,6 +3,7 @@ Core models - Base classes for all models
 """
 
 from django.db import models
+from django.conf import settings
 from django.utils import timezone
 
 
@@ -49,7 +50,7 @@ class SoftDeleteModel(models.Model):
         verbose_name="Eliminato il"
     )
     deleted_by = models.ForeignKey(
-        'users.User',
+        settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

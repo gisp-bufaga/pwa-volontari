@@ -2,7 +2,7 @@
 Users app models
 """
 
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from apps.core.models import TimeStampedModel, SoftDeleteModel, SoftDeleteManager
 
@@ -37,10 +37,20 @@ class WorkArea(TimeStampedModel):
         return self.name
 
 
-class UserManager(SoftDeleteManager):
+class UserManager(BaseUserManager, SoftDeleteManager):
     """
-    Custom manager for User with soft delete support
+    Custom manager for User with soft delete support and Django auth compatibility
     """
+    
+    def get_queryset(self):
+        """Override to use SoftDeleteManager's queryset"""
+        return super(BaseUserManager, self).get_queryset().filter(is_deleted=False)
+    
+    def get_by_natural_key(self, username):
+        """
+        Django auth requirement - get user by username
+        """
+        return self.get(**{self.model.USERNAME_FIELD: username})
     
     def create_user(self, username, email, password=None, **extra_fields):
         """Create and save a regular user"""

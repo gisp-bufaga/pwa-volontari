@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import api from '../services/api';
 
 /**
  * Authentication Store
@@ -31,39 +32,83 @@ export const useAuthStore = create(
       login: async (credentials) => {
         set({ isLoading: true, error: null });
         try {
-          // TODO: Implement actual API call in Sprint 1
-          // const { user, access, refresh } = await authService.login(credentials);
+          const response = await api.post('/auth/login/', credentials);
+          const { user, access, refresh } = response.data;
           
-          // Placeholder for now
-          console.log('Login with:', credentials);
-          
-          // Mock successful login
-          setTimeout(() => {
-            set({
-              user: { id: 1, username: 'demo', role: 'admin' },
-              accessToken: 'mock-access-token',
-              refreshToken: 'mock-refresh-token',
-              isAuthenticated: true,
-              isLoading: false,
-            });
-          }, 1000);
-        } catch (error) {
-          set({ 
-            error: error.message || 'Login fallito', 
-            isLoading: false 
+          set({
+            user,
+            accessToken: access,
+            refreshToken: refresh,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
           });
-          throw error;
+          
+          return { success: true };
+        } catch (error) {
+          const errorMessage = error.response?.data?.non_field_errors?.[0] 
+            || error.response?.data?.detail 
+            || 'Login fallito. Verifica le credenziali.';
+          
+          set({ 
+            error: errorMessage, 
+            isLoading: false,
+            isAuthenticated: false,
+          });
+          
+          return { success: false, error: errorMessage };
         }
       },
 
-      logout: () => {
-        set({
-          user: null,
-          accessToken: null,
-          refreshToken: null,
-          isAuthenticated: false,
-          error: null,
-        });
+      logout: async () => {
+        const { refreshToken } = get();
+        
+        try {
+          if (refreshToken) {
+            await api.post('/auth/logout/', { refresh: refreshToken });
+          }
+        } catch (error) {
+          console.error('Logout error:', error);
+        } finally {
+          set({
+            user: null,
+            accessToken: null,
+            refreshToken: null,
+            isAuthenticated: false,
+            error: null,
+          });
+        }
+      },
+
+      fetchProfile: async () => {
+        set({ isLoading: true });
+        try {
+          const response = await api.get('/auth/profile/');
+          set({ 
+            user: response.data, 
+            isAuthenticated: true,
+            isLoading: false 
+          });
+          return { success: true, data: response.data };
+        } catch (error) {
+          set({ isLoading: false });
+          return { success: false, error: error.message };
+        }
+      },
+
+      updateProfile: async (data) => {
+        set({ isLoading: true });
+        try {
+          const response = await api.patch('/auth/profile/', data);
+          set({ 
+            user: response.data, 
+            isLoading: false 
+          });
+          return { success: true };
+        } catch (error) {
+          set({ isLoading: false });
+          return { success: false, error: error.message };
+        }
       },
 
       // Helper methods
