@@ -4,14 +4,16 @@ import { createTheme } from '@mui/material/styles';
 const theme = createTheme({
   palette: {
     primary: {
+      main: '#cc0000', // Rosso CRI
+      light: '#ff5983',
+      dark: '#9a0036',
+
+    },
+    secondary: {
       main: '#1976d2', // Blu
       light: '#42a5f5',
       dark: '#1565c0',
-    },
-    secondary: {
-      main: '#dc004e', // Rosso CRI
-      light: '#ff5983',
-      dark: '#9a0036',
+
     },
     success: {
       main: '#4caf50',
