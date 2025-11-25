@@ -1,0 +1,6 @@
+username,email,first_name,last_name,role,phone,work_area_codes
+mario.rossi,mario.rossi@example.com,Mario,Rossi,base,3331234567,
+giulia.bianchi,giulia.bianchi@example.com,Giulia,Bianchi,admin,3337654321,LOG
+luca.verdi,luca.verdi@example.com,Luca,Verdi,base,3339876543,SAN
+anna.neri,anna.neri@example.com,Anna,Neri,admin,3332345678,"LOG,SAN"
+paolo.blu,paolo.blu@example.com,Paolo,Blu,base,3338765432,

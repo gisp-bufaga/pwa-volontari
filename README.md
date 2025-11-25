@@ -172,7 +172,7 @@ pwa-volontari/
 - Struttura base del progetto
 - Modelli Core e User
 
-### 🔄 Sprint 1 - Autenticazione & Utenti (In Corso)
+### 🔄 Sprint 1 - Autenticazione & Utenti (COMPLETO)
 - Sistema di autenticazione JWT completo
 - Gestione utenti e ruoli
 - Dashboard base

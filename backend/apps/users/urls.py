@@ -8,7 +8,8 @@ from rest_framework_simplejwt.views import TokenRefreshView
 
 from .views import (
     LoginView, LogoutView, ProfileView, ChangePasswordView,
-    UserViewSet, WorkAreaViewSet
+    UserViewSet, WorkAreaViewSet, BulkActionsView,
+    CSVImportPreviewView, CSVImportConfirmView, ExportUsersView
 )
 
 router = DefaultRouter()
@@ -24,6 +25,12 @@ urlpatterns = [
     # Profile
     path('profile/', ProfileView.as_view(), name='profile'),
     path('change-password/', ChangePasswordView.as_view(), name='change_password'),
+    
+    # Bulk Actions & Import/Export
+    path('bulk-actions/', BulkActionsView.as_view(), name='bulk_actions'),
+    path('import/preview/', CSVImportPreviewView.as_view(), name='import_preview'),
+    path('import/confirm/', CSVImportConfirmView.as_view(), name='import_confirm'),
+    path('export/', ExportUsersView.as_view(), name='export_users'),
     
     # Users and Work Areas (REST endpoints)
     path('', include(router.urls)),

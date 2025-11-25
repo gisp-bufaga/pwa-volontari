@@ -10,6 +10,7 @@ import MainLayout from './components/MainLayout';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
+import UserManagementPage from './pages/UserManagementPage';
 
 function App() {
   const { isAuthenticated, isLoading } = useAuthStore();
@@ -42,9 +43,9 @@ function App() {
       >
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/users" element={<UserManagementPage />} />
         
         {/* Placeholder routes - TODO: Implement in next sprints */}
-        <Route path="/users" element={<div style={{padding: '20px'}}>Users Management - Coming in Sprint 1</div>} />
         <Route path="/activities" element={<div style={{padding: '20px'}}>Activities - Coming in Sprint 2</div>} />
         <Route path="/forniture" element={<div style={{padding: '20px'}}>Forniture - Coming in Sprint 3</div>} />
         <Route path="/vehicles" element={<div style={{padding: '20px'}}>Vehicles - Coming in Sprint 4</div>} />
