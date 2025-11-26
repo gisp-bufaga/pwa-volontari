@@ -43,6 +43,7 @@ import {
   Cancel as DeactivateIcon,
 } from '@mui/icons-material';
 import userService from '../services/userService';
+import CreateUserDialog from '../components/CreateUserDialog';
 
 export default function UserManagementPage() {
   // State
@@ -66,6 +67,7 @@ export default function UserManagementPage() {
   const [importErrors, setImportErrors] = useState([]);
   const [sendCredentials, setSendCredentials] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   // Load users
   useEffect(() => {
@@ -262,7 +264,7 @@ export default function UserManagementPage() {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => alert('TODO: Implementare creazione utente')}
+            onClick={() => setCreateDialogOpen(true)}
           >
             Nuovo Utente
           </Button>
@@ -626,6 +628,15 @@ export default function UserManagementPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Create User Dialog */}
+      <CreateUserDialog
+        open={createDialogOpen}
+        onClose={() => setCreateDialogOpen(false)}
+        onSuccess={() => {
+          loadUsers(); // Reload users list
+        }}
+      />
     </Box>
   );
 }
