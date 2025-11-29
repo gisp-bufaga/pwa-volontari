@@ -44,6 +44,7 @@ import {
 } from '@mui/icons-material';
 import userService from '../services/userService';
 import CreateUserDialog from '../components/CreateUserDialog';
+import EditUserDialog from '../components/EditUserDialog';
 
 export default function UserManagementPage() {
   // State
@@ -68,6 +69,8 @@ export default function UserManagementPage() {
   const [sendCredentials, setSendCredentials] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
 
   // Load users
   useEffect(() => {
@@ -305,7 +308,14 @@ export default function UserManagementPage() {
 
       {/* Bulk Actions Bar */}
       {selected.length > 0 && (
-        <Paper sx={{ p: 2, mb: 2, bgcolor: 'primary.light' }}>
+        <Paper sx={{ 
+          p: 2, 
+          mb: 2, 
+          bgcolor: 'primary.light',
+          border: '2px solid #ff5983',
+          borderRadius: '8px',
+          background: '#ffffff'
+        }}>
           <Stack direction="row" spacing={2} alignItems="center">
             <Typography variant="body1" sx={{ flexGrow: 1 }}>
               {selected.length} utenti selezionati
@@ -455,7 +465,10 @@ export default function UserManagementPage() {
                       <Tooltip title="Modifica">
                         <IconButton
                           size="small"
-                          onClick={() => alert('TODO: Implementare modifica')}
+                          onClick={() => {
+                            setEditingUser(user);
+                            setEditDialogOpen(true);
+                          }}
                         >
                           <EditIcon fontSize="small" />
                         </IconButton>
@@ -636,6 +649,19 @@ export default function UserManagementPage() {
         onSuccess={() => {
           loadUsers(); // Reload users list
         }}
+      />
+
+      {/* Edit User Dialog */}
+      <EditUserDialog
+        open={editDialogOpen}
+        onClose={() => {
+          setEditDialogOpen(false);
+          setEditingUser(null);
+        }}
+        onSuccess={() => {
+          loadUsers(); // Reload users list
+        }}
+        user={editingUser}
       />
     </Box>
   );
