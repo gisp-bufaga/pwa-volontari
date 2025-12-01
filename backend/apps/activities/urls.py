@@ -1,5 +1,9 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import ActivityViewSet, ShiftViewSet
 
-urlpatterns = [
-    # URLs will be implemented in respective sprint
-]
+router = DefaultRouter()
+router.register(r'', ActivityViewSet, basename='activity')  # /api/activities/
+router.register(r'shifts', ShiftViewSet, basename='shift')   # /api/activities/shifts/
+
+urlpatterns = router.urls

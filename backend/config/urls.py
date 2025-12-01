@@ -23,8 +23,8 @@ urlpatterns = [
     
     # API endpoints
     path('api/auth/', include('apps.users.urls')),
-    #path('api/segreteria/', include('apps.segreteria.urls')),
-    #path('api/activities/', include('apps.activities.urls')),
+    path('api/segreteria/', include('apps.segreteria.urls')),
+    path('api/activities/', include('apps.activities.urls')),
     #path('api/forniture/', include('apps.forniture.urls')),
     #path('api/vehicles/', include('apps.vehicles.urls')),
     #path('api/checklist/', include('apps.checklist.urls')),

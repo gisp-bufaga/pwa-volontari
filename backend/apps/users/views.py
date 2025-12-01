@@ -20,6 +20,26 @@ from .serializers import (
 )
 from .permissions import IsAdmin, IsSuperAdmin, IsOwnerOrAdmin
 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import WorkArea
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_work_areas(request):
+    """Ritorna tutte le aree di lavoro disponibili"""
+    areas = WorkArea.objects.all().order_by('name')
+    data = [
+        {
+            'id': area.id,
+            'code': area.code,
+            'name': area.name,
+            'description': area.description
+        }
+        for area in areas
+    ]
+    return Response(data)
 
 class LoginView(generics.GenericAPIView):
     """

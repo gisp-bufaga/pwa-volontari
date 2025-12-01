@@ -1,167 +1,237 @@
-import { useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
+  Drawer,
   AppBar,
   Toolbar,
-  IconButton,
-  Typography,
-  Drawer,
   List,
+  Typography,
+  Divider,
+  IconButton,
   ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
-  ListItemButton,
   Avatar,
   Menu,
   MenuItem,
-  Divider,
-  useTheme,
-  useMediaQuery,
+  Collapse,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
-  Dashboard,
-  People,
-  Assignment,
-  LocalShipping,
-  DirectionsCar,
-  Checklist,
-  Description,
-  Notifications,
-  Settings,
-  Person,
+  Dashboard as DashboardIcon,
+  People as PeopleIcon,
+  CalendarMonth as CalendarIcon,
+  Assignment as AssignmentIcon,
+  Description as DocumentIcon,
+  AccountCircle,
   Logout,
+  ExpandLess,
+  ExpandMore,
+  Event,
 } from '@mui/icons-material';
 import { useAuthStore } from '../stores/authStore';
 
-const DRAWER_WIDTH = 260;
+const drawerWidth = 260;
 
-export default function MainLayout() {
-  const theme = useTheme();
+const MainLayout = () => {
   const navigate = useNavigate();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
-  const { user, logout, isAdmin } = useAuthStore();
-  
+  const location = useLocation();
+  const { user, logout } = useAuthStore();
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [activitiesOpen, setActivitiesOpen] = useState(true);
+  const [segretariaOpen, setSegretariaOpen] = useState(true);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  const handleProfileMenuOpen = (event) => {
+  const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleProfileMenuClose = () => {
+  const handleMenuClose = () => {
     setAnchorEl(null);
   };
 
-  const handleLogout = async () => {
-    await logout();
+  const handleProfile = () => {
+    handleMenuClose();
+    navigate('/profile');
+  };
+
+  const handleLogout = () => {
+    handleMenuClose();
+    logout();
     navigate('/login');
   };
 
-  const menuItems = [
-    { text: 'Dashboard', icon: Dashboard, path: '/dashboard' },
-    { text: 'Profilo', icon: Person, path: '/profile' },
-    ...(isAdmin() ? [
-      { divider: true, text: 'Amministrazione' },
-      { text: 'Utenti', icon: People, path: '/users' },
-      { text: 'Attività', icon: Assignment, path: '/activities' },
-      { text: 'Forniture', icon: LocalShipping, path: '/forniture' },
-      { text: 'Veicoli', icon: DirectionsCar, path: '/vehicles' },
-    ] : []),
-    { divider: true, text: 'Operazioni' },
-    { text: 'Checklist', icon: Checklist, path: '/checklist' },
-    { text: 'Report', icon: Description, path: '/reports' },
-    { text: 'Notifiche', icon: Notifications, path: '/notifications' },
+const isActive = (path) => {
+  // Gestione speciale per dashboard
+  if (path === '/dashboard') {
+    return location.pathname === '/dashboard';
+  }
+  if (path === '/') {
+    return location.pathname === '/dashboard';
+  }
+  return location.pathname.startsWith(path);
+};
+
+  // Definizione menu items principali
+const menuItems = [
+  {
+    title: 'Dashboard',
+    icon: <DashboardIcon />,
+    path: '/dashboard',  // ← CAMBIATO da '/' a '/dashboard'
+    roles: ['superadmin', 'admin', 'base'],
+  },
+  {
+    title: 'Utenti',
+    icon: <PeopleIcon />,
+    path: '/users',
+    roles: ['superadmin', 'admin'],
+  },
+];
+
+  // Activities submenu
+  const activitiesItems = [
+    {
+      title: 'Attività',
+      icon: <Event />,
+      path: '/activities',
+      roles: ['superadmin', 'admin', 'base'],
+    },
+    {
+      title: 'Calendario',
+      icon: <CalendarIcon />,
+      path: '/activities/calendar',
+      roles: ['superadmin', 'admin', 'base'],
+    },
   ];
 
+  // Segreteria submenu
+  const segretariaItems = [
+    {
+      title: 'Bacheca To-Do',
+      icon: <AssignmentIcon />,
+      path: '/segreteria/todos',
+      roles: ['superadmin', 'admin'],
+      area: 'segreteria',
+    },
+    {
+      title: 'Documenti',
+      icon: <DocumentIcon />,
+      path: '/segreteria/documents',
+      roles: ['superadmin', 'admin', 'base'],
+    },
+  ];
+
+  const canAccess = (item) => {
+    if (!user) return false;
+    if (!item.roles.includes(user.role)) return false;
+    
+    // Check area-specific access
+    if (item.area && user.role === 'admin') {
+      return user.work_areas?.some((wa) => wa.code === item.area);
+    }
+    
+    return true;
+  };
+
   const drawer = (
-    <Box>
-      {/* Logo */}
-      <Box
-        sx={{
-          p: 3,
-          display: 'flex',
-          alignItems: 'center',
-          bgcolor: 'primary.main',
-          color: 'white',
-        }}
-      >
-        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+    <div>
+      <Toolbar>
+        <Typography variant="h6" noWrap component="div">
           PWA Volontari
         </Typography>
-      </Box>
-
-      {/* Menu Items */}
-      <List sx={{ px: 1, pt: 2 }}>
-        {menuItems.map((item, index) => {
-          if (item.divider) {
-            return (
-              <Box key={index}>
-                <Divider sx={{ my: 1 }} />
-                {item.text && (
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      px: 2,
-                      py: 1,
-                      display: 'block',
-                      color: 'text.secondary',
-                      fontWeight: 600,
-                      textTransform: 'uppercase',
-                      fontSize: '0.7rem',
-                    }}
-                  >
-                    {item.text}
-                  </Typography>
-                )}
-              </Box>
-            );
-          }
-
-          return (
-            <ListItem key={index} disablePadding sx={{ mb: 0.5 }}>
+      </Toolbar>
+      <Divider />
+      
+      <List>
+        {/* Menu principale */}
+        {menuItems.map((item) => (
+          canAccess(item) && (
+            <ListItem key={item.title} disablePadding>
               <ListItemButton
-                onClick={() => {
-                  navigate(item.path);
-                  if (isMobile) handleDrawerToggle();
-                }}
-                sx={{
-                  borderRadius: 2,
-                  '&:hover': {
-                    bgcolor: 'primary.light',
-                    color: 'primary.contrastText',
-                  },
-                }}
+                selected={isActive(item.path)}
+                onClick={() => navigate(item.path)}
               >
-                <ListItemIcon sx={{ minWidth: 40 }}>
-                  <item.icon />
-                </ListItemIcon>
-                <ListItemText primary={item.text} />
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.title} />
               </ListItemButton>
             </ListItem>
-          );
-        })}
+          )
+        ))}
+
+        <Divider sx={{ my: 1 }} />
+
+        {/* Activities Section */}
+        <ListItemButton onClick={() => setActivitiesOpen(!activitiesOpen)}>
+          <ListItemIcon>
+            <CalendarIcon />
+          </ListItemIcon>
+          <ListItemText primary="Attività" />
+          {activitiesOpen ? <ExpandLess /> : <ExpandMore />}
+        </ListItemButton>
+        <Collapse in={activitiesOpen} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            {activitiesItems.map((item) => (
+              canAccess(item) && (
+                <ListItem key={item.title} disablePadding>
+                  <ListItemButton
+                    sx={{ pl: 4 }}
+                    selected={isActive(item.path)}
+                    onClick={() => navigate(item.path)}
+                  >
+                    <ListItemIcon>{item.icon}</ListItemIcon>
+                    <ListItemText primary={item.title} />
+                  </ListItemButton>
+                </ListItem>
+              )
+            ))}
+          </List>
+        </Collapse>
+
+        {/* Segreteria Section */}
+        <ListItemButton onClick={() => setSegretariaOpen(!segretariaOpen)}>
+          <ListItemIcon>
+            <AssignmentIcon />
+          </ListItemIcon>
+          <ListItemText primary="Segreteria" />
+          {segretariaOpen ? <ExpandLess /> : <ExpandMore />}
+        </ListItemButton>
+        <Collapse in={segretariaOpen} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            {segretariaItems.map((item) => (
+              canAccess(item) && (
+                <ListItem key={item.title} disablePadding>
+                  <ListItemButton
+                    sx={{ pl: 4 }}
+                    selected={isActive(item.path)}
+                    onClick={() => navigate(item.path)}
+                  >
+                    <ListItemIcon>{item.icon}</ListItemIcon>
+                    <ListItemText primary={item.title} />
+                  </ListItemButton>
+                </ListItem>
+              )
+            ))}
+          </List>
+        </Collapse>
       </List>
-    </Box>
+    </div>
   );
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex' }}>
       {/* AppBar */}
       <AppBar
         position="fixed"
         sx={{
-          width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
-          ml: { md: `${DRAWER_WIDTH}px` },
-          bgcolor: 'white',
-          color: 'text.primary',
-          boxShadow: 1,
+          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          ml: { sm: `${drawerWidth}px` },
         }}
       >
         <Toolbar>
@@ -169,57 +239,49 @@ export default function MainLayout() {
             color="inherit"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { md: 'none' } }}
+            sx={{ mr: 2, display: { sm: 'none' } }}
           >
             <MenuIcon />
           </IconButton>
-
+          
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            {/* Breadcrumb o titolo pagina */}
+            {/* Titolo dinamico basato su route */}
           </Typography>
 
           {/* User Menu */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography variant="body2" sx={{ display: { xs: 'none', sm: 'block' } }}>
-              {user?.first_name || user?.username}
+            <Typography variant="body2">
+              {user?.first_name} {user?.last_name}
             </Typography>
-            <IconButton onClick={handleProfileMenuOpen} size="small">
-              <Avatar
-                sx={{ width: 36, height: 36, bgcolor: 'primary.main' }}
-              >
-                {user?.first_name?.[0] || user?.username?.[0]}
+            <IconButton color="inherit" onClick={handleMenuOpen}>
+              <Avatar sx={{ width: 32, height: 32 }}>
+                {user?.first_name?.charAt(0)}
               </Avatar>
             </IconButton>
           </Box>
-
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleProfileMenuClose}
-            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-          >
-            <MenuItem onClick={() => { navigate('/profile'); handleProfileMenuClose(); }}>
-              <ListItemIcon><Person /></ListItemIcon>
-              Profilo
-            </MenuItem>
-            <MenuItem onClick={() => { navigate('/settings'); handleProfileMenuClose(); }}>
-              <ListItemIcon><Settings /></ListItemIcon>
-              Impostazioni
-            </MenuItem>
-            <Divider />
-            <MenuItem onClick={handleLogout}>
-              <ListItemIcon><Logout /></ListItemIcon>
-              Logout
-            </MenuItem>
-          </Menu>
         </Toolbar>
       </AppBar>
+
+      {/* User Menu Dropdown */}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={handleProfile}>
+          <AccountCircle sx={{ mr: 1 }} />
+          Profilo
+        </MenuItem>
+        <MenuItem onClick={handleLogout}>
+          <Logout sx={{ mr: 1 }} />
+          Logout
+        </MenuItem>
+      </Menu>
 
       {/* Drawer */}
       <Box
         component="nav"
-        sx={{ width: { md: DRAWER_WIDTH }, flexShrink: { md: 0 } }}
+        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
       >
         {/* Mobile drawer */}
         <Drawer
@@ -228,8 +290,11 @@ export default function MainLayout() {
           onClose={handleDrawerToggle}
           ModalProps={{ keepMounted: true }}
           sx={{
-            display: { xs: 'block', md: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: DRAWER_WIDTH },
+            display: { xs: 'block', sm: 'none' },
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: drawerWidth,
+            },
           }}
         >
           {drawer}
@@ -239,8 +304,11 @@ export default function MainLayout() {
         <Drawer
           variant="permanent"
           sx={{
-            display: { xs: 'none', md: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: DRAWER_WIDTH },
+            display: { xs: 'none', sm: 'block' },
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: drawerWidth,
+            },
           }}
           open
         >
@@ -248,20 +316,20 @@ export default function MainLayout() {
         </Drawer>
       </Box>
 
-      {/* Main Content */}
+      {/* Main content */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
           p: 3,
-          width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
+          width: { sm: `calc(100% - ${drawerWidth}px)` },
           mt: 8,
-          bgcolor: '#f5f5f5',
-          minHeight: '100vh',
         }}
       >
         <Outlet />
       </Box>
     </Box>
   );
-}
+};
+
+export default MainLayout;

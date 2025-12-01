@@ -34,4 +34,5 @@ urlpatterns = [
     
     # Users and Work Areas (REST endpoints)
     path('', include(router.urls)),
+    path('work-areas/', views.get_work_areas, name='work-areas'),
 ]
