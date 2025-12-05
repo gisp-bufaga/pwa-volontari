@@ -84,7 +84,7 @@ const menuItems = [
   {
     title: 'Dashboard',
     icon: <DashboardIcon />,
-    path: '/dashboard',  // ← CAMBIATO da '/' a '/dashboard'
+    path: '/dashboard',  
     roles: ['superadmin', 'admin', 'base'],
   },
   {
@@ -93,7 +93,10 @@ const menuItems = [
     path: '/users',
     roles: ['superadmin', 'admin'],
   },
+
 ];
+
+
 
   // Activities submenu
   const activitiesItems = [

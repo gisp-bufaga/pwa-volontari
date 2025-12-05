@@ -94,9 +94,6 @@ export default function DashboardPage() {
         <Card>
           <CardContent>
             <Typography variant="body1" paragraph>
-              📊 <strong>Sprint 2:</strong> Gestione Attività e Segreteria
-            </Typography>
-            <Typography variant="body1" paragraph>
               📦 <strong>Sprint 3:</strong> Gestione Forniture e Stock
             </Typography>
             <Typography variant="body1" paragraph>

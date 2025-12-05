@@ -56,11 +56,11 @@ const ActivityCard = ({ activity }) => {
               {activity.nome}
             </Typography>
             <Chip
-              label={activity.area_display}
+              label={activity.work_area_name} 
               size="small"
               sx={{
-                bgcolor: `${activity.colore_hex}20`,
-                color: activity.colore_hex,
+                bgcolor: `${activity.work_area_color}20`,
+                color: activity.work_area_color,
                 fontWeight: 600,
               }}
             />

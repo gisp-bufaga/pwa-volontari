@@ -1,7 +1,7 @@
 import api from './api';
 
 const activitiesService = {
-  // Activities
+  // Filtra per work_area invece di area
   getActivities: (params = {}) => {
     return api.get('/activities/', { params });
   },

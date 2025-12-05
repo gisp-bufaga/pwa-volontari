@@ -4,12 +4,12 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
+from collections import defaultdict
 from datetime import datetime, timedelta
 
-from .models import Activity, Shift
+from .models import Activity
 from .serializers import (
-    ActivityListSerializer, ActivityDetailSerializer, ActivityCreateUpdateSerializer,
-    ShiftListSerializer, ShiftDetailSerializer, ShiftCreateUpdateSerializer
+    ActivityListSerializer, ActivityDetailSerializer, ActivityCreateUpdateSerializer
 )
 from .permissions import IsAdminOrReadOnly, IsAreaAdminOrSecretariatAdmin
 
@@ -20,7 +20,7 @@ class ActivityViewSet(viewsets.ModelViewSet):
     
     Endpoints:
     - GET /activities/ - Lista tutte le attività attive
-    - GET /activities/{id}/ - Dettaglio attività con prossimi turni
+    - GET /activities/{id}/ - Dettaglio attività
     - POST /activities/ - Crea nuova attività (solo admin)
     - PUT/PATCH /activities/{id}/ - Modifica attività (solo admin dell'area)
     - DELETE /activities/{id}/ - Soft delete attività (solo admin dell'area)
@@ -28,19 +28,21 @@ class ActivityViewSet(viewsets.ModelViewSet):
     """
     permission_classes = [IsAuthenticated, IsAreaAdminOrSecretariatAdmin]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['area', 'is_active']
+    filterset_fields = ['work_area', 'is_active']
     search_fields = ['nome', 'descrizione']
-    ordering_fields = ['nome', 'area', 'created_at']
-    ordering = ['area', 'nome']
+    ordering_fields = ['nome', 'work_area', 'created_at']
+    ordering = ['work_area', 'nome']
     
     def get_queryset(self):
         """Ritorna solo attività non eliminate"""
-        queryset = Activity.objects.filter(deleted_at__isnull=True)
+        queryset = Activity.objects.filter(
+            deleted_at__isnull=True
+        ).select_related('work_area', 'created_by')
         
         # Filtra per area se specificato
-        area = self.request.query_params.get('area', None)
-        if area:
-            queryset = queryset.filter(area=area)
+        work_area_id = self.request.query_params.get('work_area', None)
+        if work_area_id:
+            queryset = queryset.filter(work_area_id=work_area_id)
         
         return queryset
     
@@ -66,14 +68,43 @@ class ActivityViewSet(viewsets.ModelViewSet):
         Endpoint custom: ritorna attività raggruppate per area.
         GET /activities/by_area/
         """
-        from collections import defaultdict
-        
         activities = self.get_queryset().filter(is_active=True)
         grouped = defaultdict(list)
         
         for activity in activities:
             serializer = ActivityListSerializer(activity)
-            grouped[activity.area].append(serializer.data)
+            grouped[activity.work_area.code].append(serializer.data)
+        
+        return Response(grouped)
+    
+    def get_serializer_class(self):
+        """Usa serializer appropriato in base all'azione"""
+        if self.action == 'list':
+            return ActivityListSerializer
+        elif self.action in ['create', 'update', 'partial_update']:
+            return ActivityCreateUpdateSerializer
+        return ActivityDetailSerializer
+    
+    def perform_create(self, serializer):
+        """Salva l'utente che ha creato l'attività"""
+        serializer.save(created_by=self.request.user)
+    
+    def perform_destroy(self, instance):
+        """Soft delete invece di eliminazione fisica"""
+        instance.soft_delete()
+    
+    @action(detail=False, methods=['get'])
+    def by_area(self, request):
+        """
+        Endpoint custom: ritorna attività raggruppate per area.
+        GET /activities/by_area/
+        """
+        activities = self.get_queryset().filter(is_active=True)
+        grouped = defaultdict(list)
+        
+        for activity in activities:
+            serializer = ActivityListSerializer(activity)
+            grouped[activity.work_area.code].append(serializer.data) 
         
         return Response(grouped)
     

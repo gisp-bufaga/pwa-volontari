@@ -20,10 +20,9 @@ class IsAreaAdminOrSecretariatAdmin(permissions.BasePermission):
     """
     Permesso per creazione/modifica attività e turni:
     - Superadmin: accesso completo
-    - Admin segreteria: accesso completo
-    - Admin area: solo per la propria area
+    - Admin: solo per le proprie aree gestite
     """
-    def has_permission(self, request, view):
+    def has_object_permission(self, request, view, obj):
         if not request.user or not request.user.is_authenticated:
             return False
         
@@ -35,9 +34,14 @@ class IsAreaAdminOrSecretariatAdmin(permissions.BasePermission):
         if request.user.role == 'superadmin':
             return True
         
-        # Admin hanno accesso
+        # Admin possono modificare solo le aree che gestiscono
         if request.user.role == 'admin':
-            return True
+            # Per Activity, controlla work_area
+            if hasattr(obj, 'work_area'):
+                return request.user.is_area_admin(obj.work_area.id)
+            # Per Shift, controlla work_area dell'attività
+            if hasattr(obj, 'attivita'):
+                return request.user.is_area_admin(obj.attivita.work_area.id)
         
         return False
     

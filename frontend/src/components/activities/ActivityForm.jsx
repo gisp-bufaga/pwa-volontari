@@ -23,7 +23,7 @@ import api from '../../services/api';
 const ActivityForm = ({ activityId = null }) => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const [WorkArea, setWorkAreas] = useState([]);
+  const [workAreas, setWorkAreas] = useState([]);
   const {
     selectedActivity,
     loading,
@@ -37,7 +37,7 @@ const ActivityForm = ({ activityId = null }) => {
   const [formData, setFormData] = useState({
     nome: '',
     descrizione: '',
-    area: '',
+    work_area: '',
     colore_hex: '#1976d2',
     link_iscrizione: '',
     is_active: true,
@@ -56,7 +56,7 @@ const ActivityForm = ({ activityId = null }) => {
       setFormData({
         nome: selectedActivity.nome || '',
         descrizione: selectedActivity.descrizione || '',
-        area: selectedActivity.area || '',
+        work_area: selectedActivity.area || '',
         colore_hex: selectedActivity.colore_hex || '#1976d2',
         link_iscrizione: selectedActivity.link_iscrizione || '',
         is_active: selectedActivity.is_active ?? true,
@@ -65,16 +65,25 @@ const ActivityForm = ({ activityId = null }) => {
   }, [selectedActivity, activityId]);
 
     useEffect(() => {
-    const fetchWorkAreas = async () => {
-      try {
-        const response = await api.get('/auth/work-areas/');
-        setWorkAreas(response.data);
-      } catch (err) {
-        console.error('Errore caricamento aree:', err);
-      }
-    };
-    fetchWorkAreas();
-  }, []);
+      const fetchWorkAreas = async () => {
+        try {
+          const response = await api.get('/auth/work-areas/');
+          console.log('Work areas response:', response.data); // ✅ Debug
+          
+          // Se response.data è un array, usalo direttamente
+          // Altrimenti potrebbe essere response.data.results o simile
+          const areas = Array.isArray(response.data) 
+            ? response.data 
+            : response.data.results || [];
+            
+          setWorkAreas(areas);
+        } catch (err) {
+          console.error('Errore caricamento aree:', err);
+          setWorkAreas([]); // ✅ Fallback a array vuoto in caso di errore
+        }
+      };
+      fetchWorkAreas();
+    }, []);
 
   const handleChange = (field) => (event) => {
     const value =
@@ -103,8 +112,8 @@ const ActivityForm = ({ activityId = null }) => {
       errors.nome = 'Il nome è obbligatorio';
     }
 
-    if (!formData.area) {
-      errors.area = "L'area è obbligatoria";
+    if (!formData.work_area) {
+      errors.work_area = "L'area è obbligatoria";
     }
 
     if (formData.link_iscrizione && !formData.link_iscrizione.match(/^https?:\/\//)) {
@@ -194,10 +203,10 @@ const ActivityForm = ({ activityId = null }) => {
           <Select
             value={formData.area}
             label="Area *"
-            onChange={handleChange('area')}
+            onChange={handleChange('work_area')}
           >
             {workAreas.map((area) => (
-              <MenuItem key={area.code} value={area.code}>
+              <MenuItem key={area.id} value={area.id}>
                 {area.name}
               </MenuItem>
             ))}
