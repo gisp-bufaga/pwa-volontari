@@ -155,11 +155,12 @@ export default function CreateUserDialog({ open, onClose, onSuccess }) {
       const newUser = await userService.createUser(submitData);
 
       // If sendCredentials, trigger password reset/send credentials
+      let emailFailed = false;
       if (sendCredentials) {
         try {
           await userService.bulkActions('send_credentials', [newUser.id]);
         } catch (emailErr) {
-          console.warn('User created but email failed:', emailErr);
+          emailFailed = true;
           // Don't fail the whole operation if email fails
         }
       }
@@ -167,10 +168,13 @@ export default function CreateUserDialog({ open, onClose, onSuccess }) {
       // Success!
       onSuccess(newUser);
       handleClose();
-      
-      const message = sendCredentials 
-        ? 'Utente creato con successo! Le credenziali sono state inviate via email.'
-        : 'Utente creato con successo!';
+
+      let message = 'Utente creato con successo!';
+      if (sendCredentials) {
+        message = emailFailed
+          ? 'Utente creato con successo, ma l\'invio email è fallito. Invia le credenziali manualmente.'
+          : 'Utente creato con successo! Le credenziali sono state inviate via email.';
+      }
       alert(message);
     } catch (err) {
       console.error('Error creating user:', err);

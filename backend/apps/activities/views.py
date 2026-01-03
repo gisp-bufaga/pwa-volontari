@@ -7,9 +7,10 @@ from django.utils import timezone
 from collections import defaultdict
 from datetime import datetime, timedelta
 
-from .models import Activity
+from .models import Activity, Shift, ShiftEnrollment
 from .serializers import (
-    ActivityListSerializer, ActivityDetailSerializer, ActivityCreateUpdateSerializer
+    ActivityListSerializer, ActivityDetailSerializer, ActivityCreateUpdateSerializer,
+    ShiftListSerializer, ShiftDetailSerializer, ShiftCreateUpdateSerializer
 )
 from .permissions import IsAdminOrReadOnly, IsAreaAdminOrSecretariatAdmin
 
@@ -76,38 +77,7 @@ class ActivityViewSet(viewsets.ModelViewSet):
             grouped[activity.work_area.code].append(serializer.data)
         
         return Response(grouped)
-    
-    def get_serializer_class(self):
-        """Usa serializer appropriato in base all'azione"""
-        if self.action == 'list':
-            return ActivityListSerializer
-        elif self.action in ['create', 'update', 'partial_update']:
-            return ActivityCreateUpdateSerializer
-        return ActivityDetailSerializer
-    
-    def perform_create(self, serializer):
-        """Salva l'utente che ha creato l'attività"""
-        serializer.save(created_by=self.request.user)
-    
-    def perform_destroy(self, instance):
-        """Soft delete invece di eliminazione fisica"""
-        instance.soft_delete()
-    
-    @action(detail=False, methods=['get'])
-    def by_area(self, request):
-        """
-        Endpoint custom: ritorna attività raggruppate per area.
-        GET /activities/by_area/
-        """
-        activities = self.get_queryset().filter(is_active=True)
-        grouped = defaultdict(list)
-        
-        for activity in activities:
-            serializer = ActivityListSerializer(activity)
-            grouped[activity.work_area.code].append(serializer.data) 
-        
-        return Response(grouped)
-    
+
     @action(detail=True, methods=['get'])
     def prossimi_turni(self, request, pk=None):
         """

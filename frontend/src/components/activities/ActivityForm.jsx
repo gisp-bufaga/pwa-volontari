@@ -68,14 +68,13 @@ const ActivityForm = ({ activityId = null }) => {
       const fetchWorkAreas = async () => {
         try {
           const response = await api.get('/auth/work-areas/');
-          console.log('Work areas response:', response.data); // ✅ Debug
-          
+
           // Se response.data è un array, usalo direttamente
           // Altrimenti potrebbe essere response.data.results o simile
-          const areas = Array.isArray(response.data) 
-            ? response.data 
+          const areas = Array.isArray(response.data)
+            ? response.data
             : response.data.results || [];
-            
+
           setWorkAreas(areas);
         } catch (err) {
           console.error('Errore caricamento aree:', err);
